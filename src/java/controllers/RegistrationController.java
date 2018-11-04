@@ -49,7 +49,7 @@ public class RegistrationController extends HttpServlet {
         }
 
         if (VALID) {
-            HRDAO.getInstance().addHR(l.get(0), l.get(1), l.get(2), l.get(3), l.get(4));
+            HRDAO.getInstance().addHR(l.get(0), l.get(1), l.get(2), l.get(3), l.get(4), l.get(5));
             request.getRequestDispatcher("index.jsp").forward(request, response);
         }
     }

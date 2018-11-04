@@ -87,9 +87,11 @@ public class HRDAO {
                         String diag = "Diagnostic: " + elm1.getElementsByTagName("diagnostic").item(0).getTextContent();
                         String medication = "Medication: " + elm1.getElementsByTagName("medication").item(0).getTextContent();
                         String trPlan = "Treatment plan: " + elm1.getElementsByTagName("treatment_plan").item(0).getTextContent();
+                        String date = "Visit date: " + elm1.getElementsByTagName("visitDate").item(0).getTextContent();
                         ret.add(diag);
                         ret.add(medication);
                         ret.add(trPlan);
+                        ret.add(date);
                     }
                 }
                 Element allergies = (Element) elm.getElementsByTagName("allergies").item(0);
@@ -137,7 +139,7 @@ public class HRDAO {
         StreamResult res = new StreamResult(new File("patients.xml"));
         tf.transform(source, res);
     }
-    
+
     public void changeImu(String chDate, String imName, String id) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException, TransformerException {
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = builderFactory.newDocumentBuilder();
@@ -147,16 +149,16 @@ public class HRDAO {
         NodeList nodeList = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
         Node imDate = nodeList.item(0);
         imDate.setTextContent(chDate);
-        
+
         Transformer tf = TransformerFactory.newInstance().newTransformer();
         DOMSource source = new DOMSource(xmlDocument);
         StreamResult res = new StreamResult(new File("patients.xml"));
         tf.transform(source, res);
     }
-    
+
     public List<String> getImunsInfo() throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
         List<String> ret = new ArrayList<>();
-        
+
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = builderFactory.newDocumentBuilder();
         Document xmlDocument = builder.parse(new File("patients.xml"));
@@ -165,14 +167,79 @@ public class HRDAO {
         NodeList nodeList = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
         Set<String> names = new ArraySet<>();
         for (int i = 0; i < nodeList.getLength(); i++) {
-            if (!(names.contains(nodeList.item(i).getTextContent())))
-            {
+            if (!(names.contains(nodeList.item(i).getTextContent()))) {
                 names.add(nodeList.item(i).getTextContent());
             }
         }
         names.forEach((elm) -> ret.add(elm));
         return ret;
     }
+
+    public List<String> getImunStats(String date) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+        List<String> ret = new ArrayList<>();
+
+        DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = builderFactory.newDocumentBuilder();
+        Document xmlDocument = builder.parse(new File("patients.xml"));
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        String expression = "/patients/patient/immunizations/immunization/imunDate[text()='" + date + "']/../imunName";
+        NodeList nodeList = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
+        for (int i = 0; i < nodeList.getLength(); i++)
+        {
+            ret.add(nodeList.item(i).getTextContent());
+        }
+        return ret;
+    }
+
+    public List<String> getAlergyStats() throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+        List<String> ret = new ArrayList<>();
+
+        DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = builderFactory.newDocumentBuilder();
+        Document xmlDocument = builder.parse(new File("patients.xml"));
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        String expression = "/patients/patient/allergies/allergy";
+        NodeList nodeList = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
+
+        Set<String> names = new ArraySet<>();
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            if (!(names.contains(nodeList.item(i).getTextContent()))) {
+                names.add(nodeList.item(i).getTextContent());
+            }
+        }
+
+        for (String name : names) {
+            String expression1 = "/patients/patient/allergies/allergy[text()='" + name + "']";
+            NodeList nodeList1 = (NodeList) xPath.compile(expression1).evaluate(xmlDocument, XPathConstants.NODESET);
+            ret.add(name + ": " + nodeList1.getLength());
+        }
+        return ret;
+    }
+
+    public List<String> getEncsBefore(String year) throws SAXException, ParserConfigurationException, IOException, XPathExpressionException {
+        List<String> ret = new ArrayList<>();
+
+        DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = builderFactory.newDocumentBuilder();
+        Document xmlDocument = builder.parse(new File("patients.xml"));
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        String expression = "/patients/patient/visits/visit";
+        NodeList nodeList = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node n = nodeList.item(i);
+            if (n.getLastChild().getTextContent().contains(year)) {
+                NodeList encData = n.getChildNodes();
+                ret.add("Diagnostic: " + encData.item(0).getTextContent());
+                ret.add("Medication: " + encData.item(1).getTextContent());
+                ret.add("Treatment Plan: " + encData.item(2).getTextContent());
+                ret.add("Visit Date: " + encData.item(3).getTextContent());
+                ret.add("_____________________________");
+            }
+        }
+
+        return ret;
+    }
+
     public void addImu(String imuDate, String imuName, String id) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException, TransformerException {
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = builderFactory.newDocumentBuilder();
@@ -182,17 +249,17 @@ public class HRDAO {
         NodeList nodeList = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
         Node immuns = nodeList.item(0);
         Element elm_immun = xmlDocument.createElement("immunization");
-        
+
         Element elm_name = xmlDocument.createElement("imunName");
         elm_name.insertBefore(xmlDocument.createTextNode(imuName), elm_name.getLastChild());
-        
+
         Element elm_date = xmlDocument.createElement("imunDate");
         elm_date.insertBefore(xmlDocument.createTextNode(imuDate), elm_date.getLastChild());
-        
+
         elm_immun.appendChild(elm_name);
         elm_immun.appendChild(elm_date);
         immuns.appendChild(elm_immun);
-        
+
         Transformer tf = TransformerFactory.newInstance().newTransformer();
         DOMSource source = new DOMSource(xmlDocument);
         StreamResult res = new StreamResult(new File("patients.xml"));
@@ -218,7 +285,7 @@ public class HRDAO {
         tf.transform(source, res);
     }
 
-    public void addMedicalVisit(String diagnostic, String medication, String treatPlan, String id) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException, TransformerException {
+    public void addMedicalVisit(String diagnostic, String medication, String treatPlan, String date, String id) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException, TransformerException {
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = builderFactory.newDocumentBuilder();
         Document xmlDocument = builder.parse(new File("patients.xml"));
@@ -232,14 +299,17 @@ public class HRDAO {
         Element elm_diagnostic = xmlDocument.createElement("diagnostic");
         Element elm_medication = xmlDocument.createElement("medication");
         Element elm_treatPlan = xmlDocument.createElement("treatment_plan");
+        Element elm_date = xmlDocument.createElement("visitDate");
 
         elm_diagnostic.insertBefore(xmlDocument.createTextNode(diagnostic), elm_diagnostic.getLastChild());
         elm_medication.insertBefore(xmlDocument.createTextNode(medication), elm_medication.getLastChild());
         elm_treatPlan.insertBefore(xmlDocument.createTextNode(treatPlan), elm_treatPlan.getLastChild());
+        elm_date.insertBefore(xmlDocument.createTextNode(date), elm_date.getLastChild());
 
         elm_docVisit.appendChild(elm_diagnostic);
         elm_docVisit.appendChild(elm_medication);
         elm_docVisit.appendChild(elm_treatPlan);
+        elm_docVisit.appendChild(elm_date);
 
         visits.appendChild(elm_docVisit);
 
@@ -249,7 +319,7 @@ public class HRDAO {
         tf.transform(source, res);
     }
 
-    public void addHR(String name, String id, String diagnostic, String medication, String treatment_plan) throws ParserConfigurationException, TransformerException, TransformerConfigurationException, IOException, SAXException {
+    public void addHR(String name, String id, String diagnostic, String medication, String treatment_plan, String date) throws ParserConfigurationException, TransformerException, TransformerConfigurationException, IOException, SAXException {
         System.out.println(name);
         System.out.println(id);
         System.out.println(diagnostic);
@@ -275,15 +345,17 @@ public class HRDAO {
         Element elm_diagnostic = doc.createElement("diagnostic");
         Element elm_medication = doc.createElement("medication");
         Element elm_treatPlan = doc.createElement("treatment_plan");
+        Element elm_date = doc.createElement("visitDate");
 
         elm_diagnostic.insertBefore(doc.createTextNode(diagnostic), elm_diagnostic.getLastChild());
         elm_medication.insertBefore(doc.createTextNode(medication), elm_medication.getLastChild());
         elm_treatPlan.insertBefore(doc.createTextNode(treatment_plan), elm_treatPlan.getLastChild());
+        elm_date.insertBefore(doc.createTextNode(date), elm_date.getLastChild());
 
         elm_docVisit.appendChild(elm_diagnostic);
         elm_docVisit.appendChild(elm_medication);
         elm_docVisit.appendChild(elm_treatPlan);
-
+        elm_docVisit.appendChild(elm_date);
         elm_docVisits.appendChild(elm_docVisit);
         element.appendChild(elm_docVisits);
 

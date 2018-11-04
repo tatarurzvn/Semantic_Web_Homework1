@@ -79,6 +79,11 @@
                         <div class="form-element">
                             <label for="treatmentPlan">Treatment Plan</label>
                             <input type="text" name="treatmentPlan" id="treatmentPlan" required>
+                            
+                        </div>
+                        <div class="form-element">
+                            <label for="date">Date</label>
+                            <input type="text" name="date" id="date" required>
                             <input type="text" name="id" id="id" value="${requestScope.id}" readonly>
                         </div>
                         <input type="submit" value="Submit">  

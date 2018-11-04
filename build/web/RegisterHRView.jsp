@@ -41,6 +41,10 @@
                 <input type="text" name="treatment_plan" id="treatment_plan" required>
             </div>
             <div class="form-element">
+                <label for="treatment_plan">Date</label>
+                <input type="text" name="date" id="date" required>
+            </div>
+            <div class="form-element">
                 <input type="submit" value="Submit">
                 <input type="reset" value="Reset">
             </div>  

@@ -67,8 +67,10 @@ public class AddThingsController extends HttpServlet {
                 obj = en.nextElement();
                 String treatPlan = request.getParameter((String) obj);
                 obj = en.nextElement();
+                String date = request.getParameter((String) obj);
+                obj = en.nextElement();
                 id = request.getParameter((String) obj);
-                HRDAO.getInstance().addMedicalVisit(diagnostic, medication, treatPlan, id);
+                HRDAO.getInstance().addMedicalVisit(diagnostic, medication, treatPlan, date, id);
                 break;
             case "imuDate":
                 String imuDate = request.getParameter(param);
