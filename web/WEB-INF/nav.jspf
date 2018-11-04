@@ -1,0 +1,29 @@
+<%-- any content can be specified here e.g.: --%>
+<%@ page pageEncoding="UTF-8" %>
+<nav>
+    <div class="navigation">
+        <ul>
+            <li><a href="index.jsp">Home</a></li>
+            <li><a href="RegisterHRView.jsp">Register</a></li>
+            <li><a href="Info.jsp">Immunizations</a></li>
+        </ul>
+        <form method="post"  action="SearchController"> 
+            <div class="form-element">
+                <label for="id">Search patient by its ID</label>
+                <input type="text" name="id" id="id" required>
+            </div>
+            <div class="form-element">
+                <input type="submit" value="Submit">
+            </div>  
+        </form>
+        <form method="post"  action="SearchMedicine"> 
+            <div class="form-element">
+                <label for="id">Search medicine on WEB</label>
+                <input type="text" name="name" id="name" required>
+            </div>
+            <div class="form-element">
+                <input type="submit" value="Submit">
+            </div>  
+        </form>
+    </div>
+</nav>
